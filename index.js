@@ -1,86 +1,76 @@
 #!/usr/bin/env node
-
 const fs = require('fs');
 const path = require('path');
 const fetch = require('node-fetch');
 const process = require('process');
-let link= process.argv[2];
-
+let pathUser= process.argv[2];
 let validLinks=[];
-let validLinksCount = 0;
 let wrongLinks=[];
-let wrongLinksCount = 0;
 
-
- const validateFile = () => {
-    let extension = path.extname(link);
+const validateFile = (pathUser) => {
+    let extension = path.extname(pathUser);
     if (extension === '.md') {
-    //  console.log('soy un .md wuuu, mira:' + extension);
-      readFile(link);
+      console.log('Correct File extension: ' + extension);
+      readFile(pathUser);
     }else {
       console.error('File no valid. Extension: ' + extension)
     }
   }
 
-  const readFile = link => {
-    fs.readFile(link, 'utf8', (err, data) => {
+  const readFile = pathUser => {
+    fs.readFile(pathUser, 'utf8', (err, data) => {
       if (!err) {
         const expression = /(https?:\/\/[^\s]+)/g;
         const regex = new RegExp(expression);
-        const links = data.match(regex);
-        validLinkers(links);
+         const links = data.match(regex);
+         mapLoop(links);
+
+        return links;
+
       } else {
         console.error(error.message);
       }
     })
   }
 
-  const validLinkers = links =>{
-    for (let i = 0; i < links.length; i++) {
-     // console.log(links[i]);
-      fetch(links[i])
-        .then(res => {
-          if (res.status >= 400) {
-
-            wrongLinksCount ++;
-        // console.log(wrongLinksCount+ " Wrong Link : "+ res.status  + links[i] );
-         wrongLinks.push(links[i]+ ' STATUS CODE : ' + res.status);
-           } else {
-              // console.log(res.status + " Successful match " + links[i] +validLinksCount);
-            validLinks.push(links[i] + ' STATUS CODE : ' + res.status);
-           return validLinksCount++;
-           }
-
-        }).catch((error)=> {
-       //  console.error('Error' + error.message);
-        });
-  }
-      if (process.argv[3] === '--validate'){
-        setTimeout(function(){
-          console.group('\n' +' Broken Links');
-           console.table( wrongLinks );
-          console.groupEnd('Broken Links');
-          console.group('Valid Links');
-            console.table( validLinks);
-          console.groupEnd('Valid Links');
-        }, 2800);
-      }
-    else if(process.argv[3] === '--stats' && process.argv[4] === '--validate'){
-        setTimeout(function(){
-        console.group('Stats Links BROKEN/VALID');
-        console.table( 'Total: '+ links.length +'\n' +'Unique: '+validLinksCount);
-        console.table('Broken: '+wrongLinksCount);
-      console.groupEnd('Valid Links');
-      }, 2800);
-    } else if(process.argv[3] === '--stats' ){
-      setTimeout(function(){
-      console.group('Stats Links ');
-        console.table( 'Total: '+ links.length +'\n' +'Unique: '+validLinksCount);
-      console.groupEnd('Valid Links');
-    }, 2800);
+const mapLoop = async (arr) => {
+  const promises = arr.map( async url => {
+    try{
+    const  statusUrl = await fetch(url)
+    if(statusUrl.status < 400){
+     return validLinks.push( statusUrl.url)
+    } else {
+      return wrongLinks.push( statusUrl.url)
     }
-  }
+    } catch (error){
+     // console.error('No valido');
+    }
+  } )
 
-  validateFile();
+ const statusUrlsArray = await Promise.all(promises)
+ //console.table(statusUrlsArray)
+ if (process.argv[3] === '--validate') {
+ console.group('Validate Links');
+        console.table(validLinks);
+ console.groupEnd('Validate Links');
 
+ console.group('\n' + ' Broken Links');
+    console.table(wrongLinks);
+ console.groupEnd('Broken Links');
+ }
+ else if (process.argv[3] === '--stats' && process.argv[4] === '--validate') {
 
+  console.group('Stats Links BROKEN/VALID');
+    console.table('Total: ' + arr.length + '\n' + 'Unique: ' + validLinks.length);
+    console.table('Broken: ' + wrongLinks.length);
+  console.groupEnd('Valid Links');
+
+}
+else if (process.argv[3] === '--stats') {
+console.group('Stats Links ');
+      console.table('Total: ' + arr.length + '\n' + 'Unique: ' + validLinks.length);
+console.groupEnd('Valid Links');
+}
+}
+
+   validateFile(pathUser);
