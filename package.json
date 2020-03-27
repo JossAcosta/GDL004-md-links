@@ -12,7 +12,8 @@
   },
   "author": "",
   "bin": {
-    "md-links": "index.js"
+    "md-links": "index.js",
+    "validate-md": "main.js"
   },
   "license": "MIT",
   "bugs": {
@@ -21,7 +22,9 @@
   "homepage": "https://github.com/JossAcosta/GDL004-md-links#readme",
   "dependencies": {
     "babel": "^6.23.0",
+    "chalk": "^3.0.0",
     "node-fetch": "^2.6.0",
+    "paint-console": "0.0.1",
     "yargs": "^15.1.0"
   }
 }
