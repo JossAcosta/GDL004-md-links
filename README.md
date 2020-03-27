@@ -62,7 +62,7 @@ mdLinks("fileName")
 El ejecutable de nuestra aplicación se ejecut de la siguiente
 manera a través de la terminal:
 
-`validate-links <path-to-file> [options]`
+`validate-md <path-to-file> [options]`
 
 Por ejemplo:
 
